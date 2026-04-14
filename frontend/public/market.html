@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Details | AI x Li.Fi Earn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="wallet-container">
+        <button id="connect-wallet-btn" class="connect-wallet-btn">
+            <span id="wallet-status-dot" class="status-dot"></span>
+            <span id="wallet-text">Connect Wallet</span>
+        </button>
+    </div>
+
+    <div class="background-effects">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+    
+    <header class="app-header">
+        <h1 class="brand-title">
+            <span class="gradient-text">Hedge</span>Wise
+        </h1>
+        <p class="subtitle"><a href="/" style="color:var(--accent-primary); text-decoration:none;">&larr; Back to Markets</a></p>
+    </header>
+
+    <main class="container">
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Loading market details...</p>
+        </div>
+
+        <div id="error-container" class="error-container hidden">
+            <div class="error-icon">⚠️</div>
+            <h2>Unable to load market</h2>
+            <p id="error-message"></p>
+            <button onclick="window.location.reload()" class="retry-btn">Try Again</button>
+        </div>
+
+        <div id="market-detail" class="market-card hidden" style="max-width: 800px; margin: 0 auto; background: var(--card-bg); /* ensure consistency */ padding: 2.5rem;">
+            <!-- Detailed Market View will be injected here via market.js -->
+        </div>
+        
+        <!-- Yield Section -->
+        <div id="yield-section" class="market-card hidden" style="max-width: 800px; margin: 2rem auto; background: var(--card-bg); padding: 2.5rem;">
+            <div class="card-header" style="margin-bottom: 1.5rem;">
+                <div style="width: 48px; height: 48px; background: rgba(0, 210, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 1px solid rgba(0, 210, 255, 0.3);">💎</div>
+                <div class="market-title">
+                    <h2 class="market-name" style="font-size: 1.5rem;">Idle USDC? Put it to work.</h2>
+                    <div class="subtitle" style="font-size: 0.95rem; margin-top: 0.3rem;">Deposit into top LI.FI Earn vaults and stack yield while you wait for opportunities.</div>
+                </div>
+            </div>
+            
+            <div id="yield-loader" class="loader-container" style="padding: 2rem 0;">
+                <div class="spinner"></div>
+                <p>Discovering top yield opportunities on Base...</p>
+            </div>
+            
+            <div id="yield-content" class="hidden">
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Dialog Modal -->
+    <div id="trade-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeTradeModal()">&times;</button>
+            <h3 id="modal-title" class="modal-title">Buy YES</h3>
+            <p id="modal-subtitle" class="modal-subtitle">Enter amount to purchase</p>
+            
+            <div class="modal-input-group">
+                <input type="number" id="modal-usdc-input" class="modal-input" placeholder="0.00 USDC" step="0.01" min="0">
+            </div>
+            
+            <div class="modal-details">
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Price per Share</span>
+                    <span id="modal-price-display">$0.00</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Estimated Shares</span>
+                    <span id="modal-shares-display">0</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Total Cost</span>
+                    <span id="modal-total-display">$0.00 USDC</span>
+                </div>
+                <div id="projected-yield-container" style="display: none; flex-direction: column; gap: 0.6rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label" style="display: flex; align-items: center; gap: 0.4rem;">
+                            Vault Projected Yield <span style="font-size: 0.75rem; background: rgba(0, 210, 255, 0.1); color: var(--accent-secondary); padding: 0.1rem 0.4rem; border-radius: 4px;">Earn</span>
+                        </span>
+                        <span id="modal-projected-yield-display" style="color: var(--success);">+$0.00</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Worst Case (Loss + Yield)</span>
+                        <span id="modal-worst-case-display" style="color: var(--danger);">-$0.00</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Best Case (Win + Yield)</span>
+                        <span id="modal-best-case-display" style="color: var(--success); font-weight: 600;">$0.00</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-align: right; margin-top: 0.2rem;">Based on <span style="color: white;"><span id="modal-apy-display">0</span>% APY</span> over <span style="color: white;"><span id="modal-duration-display">0</span> days</span></div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeTradeModal()">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="modal-confirm-btn" onclick="executeTrade()">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ethers.js for Web3 execution -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.10.0/ethers.umd.min.js"></script>
+    <script src="/market.js"></script>
+    <script src="/wallet.js"></script>
+</body>
+</html>

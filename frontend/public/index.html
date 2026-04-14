@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HedgeWise | AI x Li.Fi Earn</title>
+    <meta name="description" content="Explore active markets on the Limitless Exchange using a premium dynamic interface.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="wallet-container" style="display: flex; gap: 1rem; align-items: center;">
+        <button id="portfolio-btn" class="connect-wallet-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" onclick="openPortfolio()">
+            📦 Portfolio
+        </button>
+        <button id="connect-wallet-btn" class="connect-wallet-btn">
+            <span id="wallet-status-dot" class="status-dot"></span>
+            <span id="wallet-text">Connect Wallet</span>
+        </button>
+    </div>
+
+    <div class="background-effects">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+    
+    <header class="app-header">
+        <h1 class="brand-title">
+            <span class="gradient-text">Hedge</span>Wise
+        </h1>
+        <p class="subtitle">Real-time opportunities with premium analytics</p>
+    </header>
+
+    <main class="container">
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Fetching active markets...</p>
+        </div>
+
+        <div id="error-container" class="error-container hidden">
+            <div class="error-icon">⚠️</div>
+            <h2>Unable to load markets</h2>
+            <p id="error-message"></p>
+            <button onclick="fetchMarkets()" class="retry-btn">Try Again</button>
+        </div>
+
+        <div id="markets-grid" class="markets-grid hidden">
+            <!-- Markets will be injected here via app.js -->
+        </div>
+    </main>
+
+    <!-- Portfolio Modal -->
+    <div id="portfolio-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <button class="modal-close" onclick="closePortfolio()">&times;</button>
+            <h3 class="modal-title">Your Portfolio</h3>
+            <p class="modal-subtitle">Recent Orders</p>
+            <div id="portfolio-list" style="margin-top: 1.5rem; max-height: 60vh; overflow-y: auto; text-align: left;">
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/wallet.js"></script>
+</body>
+</html>
