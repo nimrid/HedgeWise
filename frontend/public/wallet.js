@@ -1,43 +1,37 @@
-const BASE_MAINNET_PARAMS = {
-    chainId: '0x2105', // 8453
-    chainName: 'Base',
-    nativeCurrency: {
-        name: 'Ether',
-        symbol: 'ETH',
-        decimals: 18
-    },
-    rpcUrls: ['https://mainnet.base.org'],
-    blockExplorerUrls: ['https://basescan.org']
-};
-
 async function initWallet() {
     const btn = document.getElementById('connect-wallet-btn');
     const dot = document.getElementById('wallet-status-dot');
     const text = document.getElementById('wallet-text');
     
     if (!btn) return;
-    
-    // Explicitly enforce MetaMask only
-    let mmProvider = null;
-    if (window.ethereum) {
-        if (window.ethereum.providers) {
-            mmProvider = window.ethereum.providers.find(p => 
-                p.isMetaMask && !p.isPhantom && !p.isCoinbaseWallet && !p.isBraveWallet
-            );
-        } else if (
-            window.ethereum.isMetaMask && 
-            !window.ethereum.isPhantom && 
-            !window.ethereum.isCoinbaseWallet && 
-            !window.ethereum.isBraveWallet
-        ) {
-            mmProvider = window.ethereum;
+
+    let rpcUrl = 'https://mainnet.base.org';
+    try {
+        const res = await fetch('http://localhost:3001/api/config');
+        if (res.ok) {
+            const config = await res.json();
+            if (config.BASE_RPC_URL) rpcUrl = config.BASE_RPC_URL;
         }
+    } catch(e) {
+        console.error('Failed to fetch config', e);
     }
+
+    const BASE_MAINNET_PARAMS = {
+        chainId: '0x2105', // 8453
+        chainName: 'Base',
+        nativeCurrency: {
+            name: 'Ether',
+            symbol: 'ETH',
+            decimals: 18
+        },
+        rpcUrls: [rpcUrl],
+        blockExplorerUrls: ['https://basescan.org']
+    };
     
-    if (mmProvider) {
-        window.ethereum = mmProvider; // Force global provider to strictly use MetaMask
-    } else {
-        window.ethereum = null; // Deny other wallets
+    // Fallback to whichever default provider the browser injected natively
+    if (window.ethereum && window.ethereum.providers) {
+        // Just use the first available if multiple are injected
+        window.ethereum = window.ethereum.providers[0] || window.ethereum;
     }
     
     let account = localStorage.getItem('connectedWallet');

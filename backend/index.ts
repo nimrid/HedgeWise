@@ -20,6 +20,9 @@ if (supabaseUrl && supabaseKey) {
     console.warn("Supabase credentials not found in environment variables.");
 }
 
+import fs from 'fs';
+import path from 'path';
+
 let orderClient: OrderClient | null = null;
 if (process.env.PRIVATE_KEY) {
     const privateKeyStr = process.env.PRIVATE_KEY.startsWith('0x') ? process.env.PRIVATE_KEY : '0x' + process.env.PRIVATE_KEY;
@@ -32,6 +35,18 @@ if (process.env.PRIVATE_KEY) {
 
 app.use(cors());
 app.use(express.json());
+
+app.get('/api/config', (req, res) => {
+    try {
+        const envPath = path.join(__dirname, '../frontend/.env');
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        const rpcLine = envContent.split('\n').find(line => line.startsWith('BASE_RPC_URL='));
+        const rpc = rpcLine ? rpcLine.substring(rpcLine.indexOf('=') + 1).trim() : 'https://mainnet.base.org';
+        res.json({ BASE_RPC_URL: rpc });
+    } catch (e) {
+        res.json({ BASE_RPC_URL: 'https://mainnet.base.org' });
+    }
+});
 
 app.get('/api/markets', async (req, res) => {
     try {
@@ -61,14 +76,32 @@ app.get('/api/portfolio/:wallet', async (req, res) => {
         return res.status(500).json({ error: "Supabase not configured." });
     }
     try {
+        let orders = [];
         const { data, error } = await supabase
             .from('orders')
             .select('*')
             .eq('wallet_address', wallet)
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
-        res.json(data);
+        if (error) console.error("Supabase error:", error);
+        else orders = data;
+
+        let positions: any[] = [];
+        if (process.env.LIFI_API_KEY) {
+            try {
+                const lifiRes = await fetch(`https://earn.li.fi/v1/earn/portfolio/${wallet}/positions`, {
+                    headers: { 'x-lifi-api-key': process.env.LIFI_API_KEY }
+                });
+                if (lifiRes.ok) {
+                    const lifiData = await lifiRes.json();
+                    positions = lifiData.positions || [];
+                }
+            } catch (err) {
+                console.error("Lifi fetch error:", err);
+            }
+        }
+        
+        res.json({ orders, positions });
     } catch (e: any) {
         console.error("Portfolio fetch error:", e);
         res.status(500).json({ error: e.message || String(e) });

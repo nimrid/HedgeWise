@@ -137,30 +137,58 @@ window.openPortfolio = async function() {
     try {
         const res = await fetch(`http://localhost:3001/api/portfolio/${account}`);
         if (!res.ok) throw new Error("Failed to load portfolio");
-        const orders = await res.json();
+        const payload = await res.json();
         
-        if (!orders || orders.length === 0) {
-            list.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">No orders found for this wallet.</div>';
+        const orders = payload.orders || payload || [];
+        const positions = payload.positions || [];
+        
+        if (orders.length === 0 && positions.length === 0) {
+            list.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">No orders or active positions found.</div>';
             return;
         }
         
         let html = '<div style="display: flex; flex-direction: column; gap: 1rem;">';
-        orders.forEach(o => {
-            const date = new Date(o.created_at).toLocaleString();
-            html += `
-            <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-weight: 600; color: white; font-size: 1.1rem; margin-bottom: 0.3rem;">${o.market_slug}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.85rem;">Date: ${date}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.85rem;">Order ID: ${o.order_id}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="color: ${o.token_type === 'yes' ? 'var(--success)' : 'var(--danger)'}; font-weight: bold; text-transform: uppercase;">${o.token_type}</div>
-                    <div style="color: white; font-size: 1.1rem; margin: 0.2rem 0;">${Number(o.size).toLocaleString(undefined, {maximumFractionDigits:2})} Shares</div>
-                    <div style="color: var(--accent-secondary); font-size: 0.9rem;">@ $${Number(o.price).toFixed(2)}</div>
-                </div>
-            </div>`;
-        });
+
+        if (positions.length > 0) {
+            html += '<h4 style="color: var(--accent-primary); margin-top: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Active Yield Positions</h4>';
+            positions.forEach(p => {
+                const vaultName = p.vault?.name || (p.protocolName ? `${p.protocolName} (${p.asset?.symbol || 'USDC'})` : "Unknown Vault");
+                const valUsdRaw = p.valueUsd || p.balanceUsd;
+                const valUsd = valUsdRaw ? `$${Number(valUsdRaw).toFixed(2)}` : 'N/A';
+                const apy = p.vault && p.vault.analytics?.apy?.total ? `${Number(p.vault.analytics.apy.total).toFixed(2)}%` : 'Active';
+                html += `
+                <div style="background: rgba(0, 255, 136, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(0, 255, 136, 0.2); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: white; font-size: 1.1rem; margin-bottom: 0.3rem;">${vaultName}</div>
+                        <div style="color: var(--success); font-size: 0.85rem;">Yielding: ${apy} APY</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: white; font-size: 1.1rem; margin: 0.2rem 0; font-weight: bold;">${valUsd}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        if (orders.length > 0) {
+            html += '<h4 style="color: var(--accent-secondary); margin-top: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Prediction Orders</h4>';
+            orders.forEach(o => {
+                const date = new Date(o.created_at).toLocaleString();
+                html += `
+                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: white; font-size: 1.1rem; margin-bottom: 0.3rem;">${o.market_slug}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Date: ${date}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Order ID: ${o.order_id}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: ${o.token_type === 'yes' ? 'var(--success)' : 'var(--danger)'}; font-weight: bold; text-transform: uppercase;">${o.token_type}</div>
+                        <div style="color: white; font-size: 1.1rem; margin: 0.2rem 0;">${Number(o.size).toLocaleString(undefined, {maximumFractionDigits:2})} Shares</div>
+                        <div style="color: var(--accent-secondary); font-size: 0.9rem;">@ $${Number(o.price).toFixed(2)}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        
         html += '</div>';
         list.innerHTML = html;
         

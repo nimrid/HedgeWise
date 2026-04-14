@@ -215,7 +215,6 @@ window.executeTrade = async function() {
         if (!quoteRes.ok) throw new Error("Failed to get quote for vault deposit");
         const quote = await quoteRes.json();
 
-        confirmBtn.textContent = 'Sign Transaction...';
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
 
@@ -224,6 +223,21 @@ window.executeTrade = async function() {
             throw new Error('Please switch to Base network in your wallet.');
         }
 
+        if (quote.estimate && quote.estimate.approvalAddress) {
+            confirmBtn.textContent = 'Approving USDC...';
+            const usdcAbi = [
+                "function allowance(address owner, address spender) view returns (uint256)",
+                "function approve(address spender, uint256 amount) returns (bool)"
+            ];
+            const usdcContract = new ethers.Contract(usdcAddressBase, usdcAbi, signer);
+            const currentAllowance = await usdcContract.allowance(account, quote.estimate.approvalAddress);
+            if (currentAllowance < BigInt(fromAmountTokens)) {
+                const approveTx = await usdcContract.approve(quote.estimate.approvalAddress, ethers.MaxUint256);
+                await approveTx.wait();
+            }
+        }
+
+        confirmBtn.textContent = 'Sign Transaction...';
         const tx = await signer.sendTransaction(quote.transactionRequest);
         confirmBtn.textContent = 'Depositing...';
         
@@ -407,10 +421,6 @@ async function executeYieldDeposit() {
         }
         const quote = await quoteRes.json();
         
-        // Step 4: Execute Transaction
-        btn.textContent = 'Sign Transaction...';
-        statusDiv.innerHTML = '<span style="color: var(--accent-secondary);">Please confirm the transaction in your wallet...</span>';
-        
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         
@@ -420,6 +430,25 @@ async function executeYieldDeposit() {
             throw new Error('Please switch to Base network in your wallet to deposit.');
         }
 
+        if (quote.estimate && quote.estimate.approvalAddress) {
+            btn.textContent = 'Approving USDC...';
+            statusDiv.innerHTML = '<span style="color: var(--accent-secondary);">Please approve USDC spending in your wallet...</span>';
+            const usdcAbi = [
+                "function allowance(address owner, address spender) view returns (uint256)",
+                "function approve(address spender, uint256 amount) returns (bool)"
+            ];
+            const usdcContract = new ethers.Contract(usdcAddressBase, usdcAbi, signer);
+            const currentAllowance = await usdcContract.allowance(account, quote.estimate.approvalAddress);
+            if (currentAllowance < BigInt(fromAmountTokens)) {
+                const approveTx = await usdcContract.approve(quote.estimate.approvalAddress, ethers.MaxUint256);
+                await approveTx.wait();
+            }
+        }
+
+        // Step 4: Execute Transaction
+        btn.textContent = 'Sign Transaction...';
+        statusDiv.innerHTML = '<span style="color: var(--accent-secondary);">Please confirm the deposit transaction in your wallet...</span>';
+        
         const tx = await signer.sendTransaction(quote.transactionRequest);
         
         btn.textContent = 'Depositing...';
