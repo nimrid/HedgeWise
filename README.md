@@ -17,31 +17,32 @@ This binary, all-or-nothing structure disproportionately punishes informed parti
 ## 💡 Our Solution
 HedgeWise: One deposit. Your stake earns while it waits.
 HedgeWise reimagines the collateral layer of prediction markets. Instead of locking user funds in idle escrow, every dollar deposited into a prediction position immediately begins earning yield through battle-tested DeFi vaults — without sacrificing the prediction position itself.
-Your floor is the yield. Your upside is the prediction.
+Your Hedge is the yield. Your upside is the prediction.
 
 The Loss Cushion in Practice
 For a $100 bet on a market resolving in 12 months at 5.2% APY:
-`Without Floorcast:
+```
+Without HedgeWise:
   Win → +$X (variable)
   Lose → -$100 (total loss)
 
-With Floorcast:
+With HedgeWise:
   Win → +$X + $5.20 yield
   Lose → -$94.80 effective loss (kept $5.20 yield)
          ↑
-         This is the floor. This is the point.`
-
+         This is the Hedge. This is the point
+```
 
 ## 🌟 How It Works
 ## 1. Browse Long-Duration Markets
-Floorcast surfaces prediction markets specifically filtered for long-resolution timelines — the category where idle capital cost is most significant. Every market card shows:
+HedgeWise surfaces prediction markets specifically filtered for long-resolution timelines — the category where idle capital cost is most significant. Every market card shows:
 	∙	Current Yes/No prices and implied probabilities
 	∙	Days until resolution
 	∙	Projected yield earned if position held to resolution
 	∙	Your effective downside after yield cushion
  
 ## 2. Place a Position
-Select Yes or No, enter your USDC amount. Before confirming, the AI agent surfaces:
+Select Yes or No, enter your USDC amount. Before confirming, web app surfaces:
 	∙	Live vault APY fetched from Li.Fi Earn
 	∙	Your exact loss cushion in dollar terms
 	∙	Upside scenario breakdown
@@ -50,7 +51,7 @@ Select Yes or No, enter your USDC amount. Before confirming, the AI agent surfac
 On confirmation, a single transaction via Li.Fi Composer deposits your USDC into the optimal yield vault on Base. The protocol records your position on-chain — side, amount, entry price, vault receipt.
 
 ## 4. Watch It Earn
-Your dashboard shows your positions alongside a live yield counter. The yield accrues in real time. You can see exactly how much your cushion has grown at any moment.
+Your portfolio shows your prediction positions alongside a live yield counter. The yield accrues in real time. You can see exactly how much your cushion has grown at any moment.
 
 ## 5. Resolution
 When a market resolves:
