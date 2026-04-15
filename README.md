@@ -1,33 +1,61 @@
-# HedgeWise (AI x Li.Fi Earn)
+# HedgeWise
 
-HedgeWise is a modern, responsive web application that bridges prediction market opportunities with decentralized finance yield strategies.
+HedgeWise is a DeFi-native prediction market protocol that routes user collateral into yield vaults while their prediction positions remain active. Built on Base. Powered by Li.Fi Earn.
 
 ## 🎯 The Problem
-Prediction markets fundamentally require users to lock up significant portions of their capital for extended periods, particularly for long-term resolution markets. During this lock-up phase, these funds remain completely idle, representing a substantial opportunity cost as users miss out on decentralized finance (DeFi) yield that they could have otherwise earned.
+Prediction markets have a capital efficiency problem nobody talks about.
+When you place a bet on a long-duration prediction market — “Will Trump buy Greenland by 2027?”, “Will AGI be achieved before 2028?” — your money disappears into a smart contract escrow and earns absolutely nothing for months, sometimes years, until the market resolves.
+On platforms like Polymarket and Limitless Exchange, billions of dollars in user collateral sits completely idle:
+	∙	Polymarket holds all user funds in smart contract escrow until resolution. Users can exit early by selling shares to another buyer, but the USDC never earns yield — it just transfers hands.
+	∙	Limitless Exchange follows the same model. USDC goes into the contract, collateral sits dormant, market resolves, funds are released.
+For short-duration markets (sports games, same-day events), this barely matters. But for long-duration markets — the ones that capture the most intellectually interesting predictions — the opportunity cost is enormous.
+
+## The deeper problem: all-or-nothing kills participation
+Long-duration prediction markets suffer from low participation not just because of capital lockup, but because the risk profile is brutal. You stake $100, wait 18 months, and either win or lose everything. There is no middle ground.
+This binary, all-or-nothing structure disproportionately punishes informed participants who have genuine conviction on slow-moving events but can’t stomach locking capital for years with zero fallback.
 
 ## 💡 Our Solution
-HedgeWise transforms capital efficiency for prediction markets. Instead of letting locked collateral sit dormant, we seamlessly route user deposits into high-performing yield vaults via **LI.FI Earn**. This ensures that while users wait for a market's outcome to resolve, their funds are actively deposited in yield strategies (such as Morpho on Base), continuously compounding interest to maximize value.
+HedgeWise: One deposit. Your stake earns while it waits.
+HedgeWise reimagines the collateral layer of prediction markets. Instead of locking user funds in idle escrow, every dollar deposited into a prediction position immediately begins earning yield through battle-tested DeFi vaults — without sacrificing the prediction position itself.
+Your floor is the yield. Your upside is the prediction.
 
-## 🌟 Key Features
+The Loss Cushion in Practice
+For a $100 bet on a market resolving in 12 months at 5.2% APY:
+`Without Floorcast:
+  Win → +$X (variable)
+  Lose → -$100 (total loss)
 
-### 1. **Dynamic Market Explorer**
-* Deep integration with the Limitless Exchange SDK to fetch and render live, active prediction markets.
-* High-performance gradient UI with real-time tracking of predictive market metrics, token share volumes, and conditional asset outcomes.
+With Floorcast:
+  Win → +$X + $5.20 yield
+  Lose → -$94.80 effective loss (kept $5.20 yield)
+         ↑
+         This is the floor. This is the point.`
 
-### 2. **Automated Yield Discovery**
-* Built natively on top of the **LI.FI Earn Rest API** (\`earn.li.fi\`).
-* Scans for the highest yield **USDC** vaults dynamically routing to networks like Base.
-* Evaluates real-time protocol safety (e.g., Morpho), APY percentages mathematically stripped of fractional errors, and TVL sizes to guarantee maximum yield capture for idle capital.
-* Automatically projects the mathematical Best-Case vs Worst-Case scenarios mapping standard APY gains onto user positions.
 
-### 3. **Li.Fi Composer Execution Bypass**
-* Seamlessly bypasses traditional Limitless order constraints to route orders directly into the native cross-chain **LI.FI Composer Quote API** (\`li.quest/v1/quote\`).
-* Initiates and signs verified base-layer **Web3/Metamask transactions** for frictionless vault investments without needing centralized custodial wallets.
+## 🌟 How It Works
+## 1. Browse Long-Duration Markets
+Floorcast surfaces prediction markets specifically filtered for long-resolution timelines — the category where idle capital cost is most significant. Every market card shows:
+	∙	Current Yes/No prices and implied probabilities
+	∙	Days until resolution
+	∙	Projected yield earned if position held to resolution
+	∙	Your effective downside after yield cushion
+ 
+## 2. Place a Position
+Select Yes or No, enter your USDC amount. Before confirming, the AI agent surfaces:
+	∙	Live vault APY fetched from Li.Fi Earn
+	∙	Your exact loss cushion in dollar terms
+	∙	Upside scenario breakdown
+ 
+## 3. Collateral Goes to Work
+On confirmation, a single transaction via Li.Fi Composer deposits your USDC into the optimal yield vault on Base. The protocol records your position on-chain — side, amount, entry price, vault receipt.
 
-### 4. **Supabase Portfolio Tracker**
-* Powerful backend integration driven by **Express.js** and the **@supabase/supabase-js** REST client.
-* Records real-world execution hashes, deposit values, token parameters, and dates continuously into a serverless Postgres network table without triggering complex SQL/pg host connection conflicts.
-* Features a one-click frontend overlay (**"Portfolio"**) that pulls historical transaction graphs based safely off the connected EVM Wallet Address.
+## 4. Watch It Earn
+Your dashboard shows your positions alongside a live yield counter. The yield accrues in real time. You can see exactly how much your cushion has grown at any moment.
+
+## 5. Resolution
+When a market resolves:
+	∙	Winners receive their principal back + all yield earned + proportional share of the losing pool’s principal
+	∙	Losers receive their yield earned during the period — a real, meaningful cushion that softens the loss
 
 ## 💻 Tech Stack
 
@@ -96,6 +124,12 @@ CREATE TABLE orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-
+## Roadmap
+v0.1 — Hackathon Prototype
+	∙	Hardcoded long-duration markets
+	∙	Li.Fi Composer integration for vault deposits
+	∙	Loss cushion dashboard
+	∙	Manual resolution (admin toggle)
+ 
 ## ⚠️ Known Issues
 * On some cloud-deployed IDE environments, native \`pg\` or \`pg-pool\` postgres integrations might collapse due to IPv4/IPv6 resolver faults on Supabase (\`getaddrinfo ENOTFOUND\`). Always rely on the \`@supabase/supabase-js\` REST layer implemented within \`backend/index.ts\` to completely avoid this.
