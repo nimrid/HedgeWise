@@ -127,10 +127,15 @@ CREATE TABLE orders (
 ```
 ## Roadmap
 v0.1 — Hackathon Prototype
-	∙	Hardcoded long-duration markets
+	∙  long-duration markets via limitless api
 	∙	Li.Fi Composer integration for vault deposits
-	∙	Loss cushion dashboard
+	∙	Loss cushion calculation and display in Portfolio
+   ∙  User Prediction order stored in database
 	∙	Manual resolution (admin toggle)
+v0.2 - 
+   ∙ On-chain position tokens and settlement logic
+   ∙ Trustless resolution via oracle
+   ∙ Peer-to-peer matching fully on-chain
  
 ## ⚠️ Known Issues
 * On some cloud-deployed IDE environments, native \`pg\` or \`pg-pool\` postgres integrations might collapse due to IPv4/IPv6 resolver faults on Supabase (\`getaddrinfo ENOTFOUND\`). Always rely on the \`@supabase/supabase-js\` REST layer implemented within \`backend/index.ts\` to completely avoid this.
