@@ -293,16 +293,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadYieldOpportunities() {
     try {
-        // Step 1: Find best USDC Vaults on Base (increased limit to ensure we find Morpho)
+        // Step 1: Find best USDC Vaults on Base
         const params = new URLSearchParams({
             chainId: '8453',
-            asset: 'USDC',
             sortBy: 'apy',
-            minTvlUsd: '100000',
-            limit: '50'
+            limit: '5'
         });
         
-        const response = await fetch(`https://earn.li.fi/v1/earn/vaults?${params}`);
+        const response = await fetch(`https://earn.li.fi/v1/vaults?${params}`, {
+            method: 'GET',
+            headers: {
+                'x-lifi-api-key': '2bdd3fe7-af91-41c6-bb2c-28e063304e01.e09914b8-ab17-4e7c-90d5-2568e9c6f201'
+            }
+        });
         if (!response.ok) throw new Error('Failed to fetch vaults');
         
         const { data: vaults } = await response.json();
